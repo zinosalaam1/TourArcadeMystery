@@ -1,0 +1,95 @@
+import { useState } from "react";
+import { MysteryBox } from "./MysteryBox";
+import { ResultModal } from "./ResultModal";
+import { UsernameInput } from "./UsernameInput";
+import { Gift, Users, Trophy, User } from "lucide-react";
+
+const TOTAL_BOXES = 50;
+
+// 🎯 PROBABILITY SETTINGS
+// Example: 1% chance to win
+const WIN_PROBABILITY = 100;
+
+export function MysteryBoxGame() {
+  const [username, setUsername] = useState("");
+  const [gameStarted, setGameStarted] = useState(false);
+
+  const [hasPlayed, setHasPlayed] = useState(false);
+  const [selectedBox, setSelectedBox] = useState<number | null>(null);
+
+  const [showResult, setShowResult] = useState(false);
+  const [isWinner, setIsWinner] = useState(false);
+  const [isRevealing, setIsRevealing] = useState(false);
+
+  const handleBoxClick = (index: number) => {
+    if (hasPlayed) return;
+
+    setSelectedBox(index);
+    setIsRevealing(true);
+
+    setTimeout(() => {
+      const winRoll = Math.random();
+      const won = winRoll < WIN_PROBABILITY;
+
+      setIsWinner(won);
+      setShowResult(true);
+      setHasPlayed(true);
+      setIsRevealing(false);
+    }, 1500);
+  };
+
+  const handleCloseResult = () => setShowResult(false);
+
+  const handlePlayAgain = () => {
+    setHasPlayed(false);
+    setSelectedBox(null);
+    setShowResult(false);
+  };
+
+  const handleStartGame = (name: string) => {
+    setUsername(name);
+    setGameStarted(true);
+  };
+
+  if (!gameStarted) {
+    return <UsernameInput onSubmit={handleStartGame} />;
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center p-8">
+      <div className="text-center mb-12">
+        <h1 className="text-5xl mb-4 text-white flex items-center gap-3 justify-center">
+          <Gift className="w-12 h-12 text-yellow-400" />
+          Mystery Box Challenge
+        </h1>
+
+        <div className="flex items-center justify-center gap-2 text-yellow-400 mt-4">
+          <User className="w-5 h-5" />
+          <span className="text-lg">Playing as: {username}</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-10 gap-3 mb-8 w-full max-w-7xl px-4">
+        {Array.from({ length: TOTAL_BOXES }, (_, i) => (
+          <MysteryBox
+            key={i}
+            boxNumber={i + 1}
+            isSelected={selectedBox === i}
+            isRevealing={isRevealing && selectedBox === i}
+            hasPlayed={hasPlayed}
+            onClick={() => handleBoxClick(i)}
+          />
+        ))}
+      </div>
+
+      {showResult && (
+        <ResultModal
+          isWinner={isWinner}
+          username={username}
+          onClose={handleCloseResult}
+          onPlayAgain={handlePlayAgain}
+        />
+      )}
+    </div>
+  );
+}
