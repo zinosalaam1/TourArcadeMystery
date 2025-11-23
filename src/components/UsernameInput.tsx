@@ -4,7 +4,7 @@ import { Gift, User, Sparkles } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import axios from "axios";
-import { API_BASE } from "../config";
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 interface UsernameInputProps {
   onSubmit: (username: string) => void;
