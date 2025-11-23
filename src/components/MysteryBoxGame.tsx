@@ -2,19 +2,17 @@ import { useState } from "react";
 import { MysteryBox } from "./MysteryBox";
 import { ResultModal } from "./ResultModal";
 import { UsernameInput } from "./UsernameInput";
-import { Gift, Users, Trophy, User } from "lucide-react";
+import { Gift, User } from "lucide-react";
 
 const TOTAL_BOXES = 50;
-
-// 🎯 PROBABILITY SETTINGS
-// Example: 1% chance to win
-const WIN_PROBABILITY = 0.10;
+const WIN_PROBABILITY = 0.10; // 10% chance to win
+const MAX_CHANCES = 3; // ← limit to 3 attempts
 
 export function MysteryBoxGame() {
   const [username, setUsername] = useState("");
   const [gameStarted, setGameStarted] = useState(false);
 
-  const [hasPlayed, setHasPlayed] = useState(false);
+  const [remainingChances, setRemainingChances] = useState(MAX_CHANCES);
   const [selectedBox, setSelectedBox] = useState<number | null>(null);
 
   const [showResult, setShowResult] = useState(false);
@@ -22,7 +20,7 @@ export function MysteryBoxGame() {
   const [isRevealing, setIsRevealing] = useState(false);
 
   const handleBoxClick = (index: number) => {
-    if (hasPlayed) return;
+    if (remainingChances <= 0 || isRevealing) return; // block if no chances left
 
     setSelectedBox(index);
     setIsRevealing(true);
@@ -33,22 +31,25 @@ export function MysteryBoxGame() {
 
       setIsWinner(won);
       setShowResult(true);
-      setHasPlayed(true);
       setIsRevealing(false);
+
+      // reduce remaining chances
+      setRemainingChances(prev => prev - 1);
     }, 1500);
   };
 
   const handleCloseResult = () => setShowResult(false);
 
   const handlePlayAgain = () => {
-    setHasPlayed(false);
     setSelectedBox(null);
     setShowResult(false);
+    // Do not reset remainingChances unless you want a full reset
   };
 
   const handleStartGame = (name: string) => {
     setUsername(name);
     setGameStarted(true);
+    setRemainingChances(MAX_CHANCES); // reset chances at start
   };
 
   if (!gameStarted) {
@@ -65,7 +66,9 @@ export function MysteryBoxGame() {
 
         <div className="flex items-center justify-center gap-2 text-yellow-400 mt-4">
           <User className="w-5 h-5" />
-          <span className="text-lg">Playing as: {username}</span>
+          <span className="text-lg">
+            Playing as: {username} | Remaining chances: {remainingChances}
+          </span>
         </div>
       </div>
 
@@ -76,7 +79,7 @@ export function MysteryBoxGame() {
             boxNumber={i + 1}
             isSelected={selectedBox === i}
             isRevealing={isRevealing && selectedBox === i}
-            hasPlayed={hasPlayed}
+            hasPlayed={remainingChances === 0} // disable boxes when no chances left
             onClick={() => handleBoxClick(i)}
           />
         ))}
