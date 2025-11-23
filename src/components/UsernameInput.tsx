@@ -136,7 +136,7 @@ const pingServer = async () => {
 
           <div className="mt-6 p-4 bg-gray-900/50 rounded-lg border border-gray-700">
             <p className="text-sm text-gray-400 text-center">🎯 50 mystery boxes waiting for you</p>
-            <p className="text-sm text-gray-400 text-center mt-1">💎 Only 5 winners out of 200 players</p>
+            <p className="text-sm text-gray-400 text-center mt-1">💎 Only 5 winners</p>
           </div>
         </form>
 
