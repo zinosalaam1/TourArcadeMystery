@@ -1,60 +1,62 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MysteryBox } from "./MysteryBox";
 import { ResultModal } from "./ResultModal";
 import { UsernameInput } from "./UsernameInput";
 import { Gift, User } from "lucide-react";
+import axios from "axios";
 
 const TOTAL_BOXES = 50;
-const WIN_PROBABILITY = 0.10; // 10% chance to win
-const MAX_CHANCES = 3; // ← limit to 3 attempts
+const WIN_PROBABILITY = 0.10; // for random frontend fallback
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 export function MysteryBoxGame() {
   const [username, setUsername] = useState("");
   const [gameStarted, setGameStarted] = useState(false);
-
-  const [remainingChances, setRemainingChances] = useState(MAX_CHANCES);
+  const [remainingChances, setRemainingChances] = useState(0);
   const [selectedBox, setSelectedBox] = useState<number | null>(null);
-
   const [showResult, setShowResult] = useState(false);
   const [isWinner, setIsWinner] = useState(false);
   const [isRevealing, setIsRevealing] = useState(false);
 
-  const handleBoxClick = (index: number) => {
-    if (remainingChances <= 0 || isRevealing) return; // block if no chances left
+  const handleStartGame = async (name: string) => {
+    try {
+      const res = await axios.post(`${API_BASE}/api/register`, { username: name });
+      setUsername(name);
+      setRemainingChances(res.data.remainingChances);
+      setGameStarted(true);
+    } catch (err) {
+      console.error(err);
+      alert("Cannot connect to server.");
+    }
+  };
+
+  const handleBoxClick = async (index: number) => {
+    if (remainingChances <= 0 || isRevealing) return;
 
     setSelectedBox(index);
     setIsRevealing(true);
 
-    setTimeout(() => {
-      const winRoll = Math.random();
-      const won = winRoll < WIN_PROBABILITY;
+    try {
+      const res = await axios.post(`${API_BASE}/api/select-box`, {
+        username,
+        boxNumber: index + 1
+      });
 
-      setIsWinner(won);
+      setIsWinner(res.data.reward);
+      setRemainingChances(res.data.remainingChances);
       setShowResult(true);
+    } catch (err) {
+      console.error(err);
+      alert("Error selecting box.");
+    } finally {
       setIsRevealing(false);
-
-      // reduce remaining chances
-      setRemainingChances(prev => prev - 1);
-    }, 1500);
+    }
   };
 
   const handleCloseResult = () => setShowResult(false);
+  const handlePlayAgain = () => setSelectedBox(null);
 
-  const handlePlayAgain = () => {
-    setSelectedBox(null);
-    setShowResult(false);
-    // Do not reset remainingChances unless you want a full reset
-  };
-
-  const handleStartGame = (name: string) => {
-    setUsername(name);
-    setGameStarted(true);
-    setRemainingChances(MAX_CHANCES); // reset chances at start
-  };
-
-  if (!gameStarted) {
-    return <UsernameInput onSubmit={handleStartGame} />;
-  }
+  if (!gameStarted) return <UsernameInput onSubmit={handleStartGame} />;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8">
@@ -63,7 +65,6 @@ export function MysteryBoxGame() {
           <Gift className="w-12 h-12 text-yellow-400" />
           Mystery Box Challenge
         </h1>
-
         <div className="flex items-center justify-center gap-2 text-yellow-400 mt-4">
           <User className="w-5 h-5" />
           <span className="text-lg">
@@ -79,7 +80,7 @@ export function MysteryBoxGame() {
             boxNumber={i + 1}
             isSelected={selectedBox === i}
             isRevealing={isRevealing && selectedBox === i}
-            hasPlayed={remainingChances === 0} // disable boxes when no chances left
+            hasPlayed={remainingChances === 0}
             onClick={() => handleBoxClick(i)}
           />
         ))}
