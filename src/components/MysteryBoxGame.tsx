@@ -4,7 +4,7 @@ import { ResultModal } from "./ResultModal";
 import { UsernameInput } from "./UsernameInput";
 import { Gift, User } from "lucide-react";
 
-const TOTAL_BOXES = 50;
+const TOTAL_BOXES = 100;
 const WIN_PROBABILITY = 0.20; // 10% chance to win
 const MAX_CHANCES = 3; // ← limit to 3 attempts
 
