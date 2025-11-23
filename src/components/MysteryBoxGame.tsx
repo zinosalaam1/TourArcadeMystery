@@ -8,7 +8,7 @@ const TOTAL_BOXES = 50;
 
 // 🎯 PROBABILITY SETTINGS
 // Example: 1% chance to win
-const WIN_PROBABILITY = 100;
+const WIN_PROBABILITY = 0.10;
 
 export function MysteryBoxGame() {
   const [username, setUsername] = useState("");
